@@ -48,7 +48,8 @@ const cadastrarUsuario = async (req, res) => {
             text: `Olá ${nome}! Ficamos feliz pelo seu cadastro.`,
         });
 
-        return res.status(200).json(usuario[0]);
+        const {senha: _, ...dadosUsuario} = usuario[0];
+        return res.status(200).json(dadosUsuario);
     } catch (error) {
         return res.status(400).json(error.message);
     }
