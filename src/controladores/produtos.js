@@ -155,7 +155,7 @@ const atualizarProduto = async (req, res) => {
 const excluirProduto = async (req, res) => {
     const { usuario } = req;
     const { id } = req.params;
-    //excluir imagem tbm
+
     try {
         const produtoEncontrado = await knex('produtos').where({
             id,
@@ -164,6 +164,17 @@ const excluirProduto = async (req, res) => {
 
         if (!produtoEncontrado) {
             return res.status(404).json('Produto não encontrado');
+        }
+
+        if(produtoEncontrado.imagem) {
+            const { data, error } = await supabase
+            .storage
+            .from(process.env.SB_BUCKET)
+            .remove([`${usuario.id}${produtoEncontrado.imagem}`]);
+        
+            if(error) {
+                return res.status(400).json(error.message);
+            } 
         }
 
         const produtoExcluido = await knex('produtos').where({
