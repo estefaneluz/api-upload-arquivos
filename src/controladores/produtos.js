@@ -14,6 +14,25 @@ const listarProdutos = async (req, res) => {
                 }
             });
 
+        for(const produto of produtos){
+            if(produto.imagem) {
+                const imagemURL = `/produtos/${produto.nome}`
+
+                const { publicURL, error } = supabase
+                .storage
+                .from(process.env.SB_BUCKET)
+                .getPublicUrl(`${usuario.id}${imagemURL}`);
+            
+                if(error) {
+                    return res.status(400).json(error.message);
+                }
+
+                produto.publicURL = publicURL;
+            } else {
+                produto.publicURL = null;
+            }
+        }
+
         return res.status(200).json(produtos);
     } catch (error) {
         return res.status(400).json(error.message);
@@ -64,12 +83,12 @@ const cadastrarProduto = async (req, res) => {
     try {
         if (imagem) {        
             const bufferImg = Buffer.from(imagem, 'base64');
-            imagem = `${usuario.id}/produtos/${nome}`;
-            
+            imagem = `/produtos/${nome}`;
+
             const { data, error } = await supabase
                 .storage
                 .from(process.env.SB_BUCKET)
-                .upload(imagem, bufferImg);
+                .upload(`${usuario.id}${imagem}`, bufferImg);
             
             if(error) {
                 return res.status(400).json(error.message);
@@ -99,9 +118,9 @@ const cadastrarProduto = async (req, res) => {
 const atualizarProduto = async (req, res) => {
     const { usuario } = req;
     const { id } = req.params;
-    const { nome, estoque, preco, categoria, descricao, imagem } = req.body;
+    const { nome, estoque, preco, categoria, descricao } = req.body;
 
-    if (!nome && !estoque && !preco && !categoria && !descricao && !imagem) {
+    if (!nome && !estoque && !preco && !categoria && !descricao) {
         return res.status(404).json('Informe ao menos um campo para atualizaçao do produto');
     }
 
@@ -123,7 +142,6 @@ const atualizarProduto = async (req, res) => {
                 preco,
                 categoria,
                 descricao,
-                imagem
             });
 
         if (!produto) {
