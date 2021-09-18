@@ -1,4 +1,5 @@
 const supabase = require('../servicos/supabase');
+const knex = require('../conexao');
 
 const atualizarImagem = async (req, res) => {
     const { usuario } = req;
@@ -27,13 +28,13 @@ const atualizarImagem = async (req, res) => {
             return res.status(400).json(error.message);
         }
 
-        const { publicURL, error } = supabase
+        const { publicURL, errorUrl } = supabase
             .storage
             .from(process.env.SB_BUCKET)
             .getPublicUrl(`${usuario.id}${imagem}`);
         
-        if(error) {
-            return res.status(400).json(error.message);
+        if(errorUrl) {
+            return res.status(400).json(errorUrl.message);
         }
 
         return res.status(200).json(publicURL);
@@ -57,13 +58,13 @@ const deletarImagem = async (req, res) => {
         }
 
         if(produtoEncontrado.imagem) {
-            const { data, error } = await supabase
+            const { data, errorUrl } = await supabase
                 .storage
                 .from(process.env.SB_BUCKET)
                 .remove(`${usuario.id}${imagem}`);
             
-            if(error) {
-                return res.status(400).json(error.message);
+            if(errorUrl) {
+                return res.status(400).json(errorUrl.message);
             }
         } else {
             return res.status(200).json("Esse produto já não tem imagem.");
@@ -74,3 +75,5 @@ const deletarImagem = async (req, res) => {
         return res.status(400).json(error.message);
     }
 }
+
+module.exports = { atualizarImagem, deletarImagem }
