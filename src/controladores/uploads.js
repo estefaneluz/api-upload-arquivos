@@ -17,15 +17,26 @@ const atualizarImagem = async (req, res) => {
         }
 
         const bufferImg = Buffer.from(imagem, 'base64');
-        imagem = `/produtos/${produtoEncontrado.nome}`;
-        
-        const { data, error } = await supabase
+        imagem = `/produtos/${produtoEncontrado.nome.split(" ").join('')}`;
+
+        if(produtoEncontrado.imagem) {
+            const { data, error } = await supabase
             .storage
             .from(process.env.SB_BUCKET)
-            .update(`${usuario.id}${imagem}`, bufferImg);
+            .update(`${usuario.id}${produtoEncontrado.imagem}`, bufferImg);
         
-        if(error) {
-            return res.status(400).json(error.message);
+            if(error) {
+                return res.status(400).json(error.message);
+            }
+        } else {
+            const { data, error } = await supabase
+            .storage
+            .from(process.env.SB_BUCKET)
+            .upload(`${usuario.id}${imagem}`, bufferImg);
+        
+            if(error) {
+                return res.status(400).json(error.message);
+            }
         }
 
         const { publicURL, errorUrl } = supabase
@@ -35,6 +46,16 @@ const atualizarImagem = async (req, res) => {
         
         if(errorUrl) {
             return res.status(400).json(errorUrl.message);
+        }
+
+        const produto = await knex('produtos')
+            .where({ id })
+            .update({
+                imagem
+            });
+
+        if (!produto) {
+            return res.status(400).json("O produto não foi atualizado");
         }
 
         return res.status(200).json(publicURL);
@@ -61,13 +82,23 @@ const deletarImagem = async (req, res) => {
             const { data, errorUrl } = await supabase
                 .storage
                 .from(process.env.SB_BUCKET)
-                .remove(`${usuario.id}${imagem}`);
+                .remove(`${usuario.id}${produtoEncontrado.imagem}`);
             
             if(errorUrl) {
                 return res.status(400).json(errorUrl.message);
             }
         } else {
             return res.status(200).json("Esse produto já não tem imagem.");
+        }
+
+        const produto = await knex('produtos')
+            .where({ id })
+            .update({
+                imagem: null
+            });
+
+        if (!produto) {
+            return res.status(400).json("O produto não foi atualizado");
         }
 
         return res.status(200).json("Imagem removida com sucesso.");
