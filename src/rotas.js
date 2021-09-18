@@ -2,6 +2,7 @@ const express = require('express');
 const usuarios = require('./controladores/usuarios');
 const login = require('./controladores/login');
 const produtos = require('./controladores/produtos');
+const uploads = require('./controladores/uploads');
 const verificaLogin = require('./filtros/verificaLogin');
 
 const rotas = express();
@@ -25,5 +26,9 @@ rotas.get('/produtos/:id', produtos.obterProduto);
 rotas.post('/produtos', produtos.cadastrarProduto);
 rotas.put('/produtos/:id', produtos.atualizarProduto);
 rotas.delete('/produtos/:id', produtos.excluirProduto);
+
+// atualização de imagem
+rotas.put('/produtos/:id/imagem', uploads.atualizarImagem);
+rotas.delete('/produtos/:id/imagem', uploads.deletarImagem);
 
 module.exports = rotas;
