@@ -16,12 +16,10 @@ const listarProdutos = async (req, res) => {
 
         for(const produto of produtos){
             if(produto.imagem) {
-                const imagemURL = `/produtos/${produto.nome}`
-
                 const { publicURL, error } = supabase
                 .storage
                 .from(process.env.SB_BUCKET)
-                .getPublicUrl(`${usuario.id}${imagemURL}`);
+                .getPublicUrl(`${usuario.id}${produto.imagem}`);
             
                 if(error) {
                     return res.status(400).json(error.message);
@@ -83,7 +81,7 @@ const cadastrarProduto = async (req, res) => {
     try {
         if (imagem) {        
             const bufferImg = Buffer.from(imagem, 'base64');
-            imagem = `/produtos/${nome}`;
+            imagem = `/produtos/${nome.split(" ").join('')}`;
 
             const { data, error } = await supabase
                 .storage
@@ -157,7 +155,7 @@ const atualizarProduto = async (req, res) => {
 const excluirProduto = async (req, res) => {
     const { usuario } = req;
     const { id } = req.params;
-
+    //excluir imagem tbm
     try {
         const produtoEncontrado = await knex('produtos').where({
             id,
