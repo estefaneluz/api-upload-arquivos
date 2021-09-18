@@ -1,4 +1,5 @@
 const knex = require('../conexao');
+const supabase = require('../servicos/supabase')
 
 const listarProdutos = async (req, res) => {
     const { usuario } = req;
@@ -41,7 +42,8 @@ const obterProduto = async (req, res) => {
 
 const cadastrarProduto = async (req, res) => {
     const { usuario } = req;
-    const { nome, estoque, preco, categoria, descricao, imagem } = req.body;
+    const { nome, estoque, preco, categoria, descricao } = req.body;
+    let { imagem } = req.body;
 
     if (!nome) {
         return res.status(404).json('O campo nome é obrigatório');
@@ -60,6 +62,20 @@ const cadastrarProduto = async (req, res) => {
     }
 
     try {
+        if (imagem) {        
+            const bufferImg = Buffer.from(imagem, 'base64');
+            imagem = `${usuario.id}/produtos/${nome}`;
+            
+            const { data, error } = await supabase
+                .storage
+                .from(process.env.SB_BUCKET)
+                .upload(imagem, bufferImg);
+            
+            if(error) {
+                return res.status(400).json(error.message);
+            }
+        }
+    
         const produto = await knex('produtos').insert({
             usuario_id: usuario.id,
             nome,
