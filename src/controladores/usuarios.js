@@ -1,5 +1,6 @@
 const knex = require('../conexao');
 const bcrypt = require('bcrypt');
+const nodemailer = require('../../nodemailer');
 
 const cadastrarUsuario = async (req, res) => {
     const { nome, email, senha, nome_loja } = req.body;
@@ -39,6 +40,13 @@ const cadastrarUsuario = async (req, res) => {
         if (!usuario) {
             return res.status(400).json("O usuário não foi cadastrado.");
         }
+
+        nodemailer.sendMail({
+            from: 'Market Place <market.place@gmail.com>',
+            to: email,
+            subject: "Bem vindo(a) ao Market Place!",
+            text: `Olá ${nome}! Ficamos feliz pelo seu cadastro.`,
+        });
 
         return res.status(200).json(usuario[0]);
     } catch (error) {
