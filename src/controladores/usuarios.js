@@ -1,6 +1,6 @@
 const knex = require('../conexao');
 const bcrypt = require('bcrypt');
-const nodemailer = require('../../nodemailer');
+const nodemailer = require('../servicos/nodemailer');
 
 const cadastrarUsuario = async (req, res) => {
     const { nome, email, senha, nome_loja } = req.body;
