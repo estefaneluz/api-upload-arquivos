@@ -79,13 +79,13 @@ const deletarImagem = async (req, res) => {
         }
 
         if(produtoEncontrado.imagem) {
-            const { data, errorUrl } = await supabase
+            const { data, error } = await supabase
                 .storage
                 .from(process.env.SB_BUCKET)
-                .remove(`${usuario.id}${produtoEncontrado.imagem}`);
+                .remove([`${usuario.id}${produtoEncontrado.imagem}`]);
             
-            if(errorUrl) {
-                return res.status(400).json(errorUrl.message);
+            if(error) {
+                return res.status(400).json(error.message);
             }
         } else {
             return res.status(200).json("Esse produto já não tem imagem.");
@@ -98,7 +98,7 @@ const deletarImagem = async (req, res) => {
             });
 
         if (!produto) {
-            return res.status(400).json("O produto não foi atualizado");
+            return res.status(400).json("A imagem não foi deletada");
         }
 
         return res.status(200).json("Imagem removida com sucesso.");
